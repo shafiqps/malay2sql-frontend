@@ -5,22 +5,47 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-
+import api from '@/lib/axios'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useUser } from "@/contexts/UserContext"
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const router = useRouter()
+  const { fetchUser } = useUser()
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically handle authentication
-    // For now, we'll just redirect to the dashboard
-    localStorage.setItem('authToken', 'dummy-token')
-    router.push('/')
+    setError("")
+    
+    try {
+      // Create form data as expected by FastAPI's OAuth2PasswordRequestForm
+      const formData = new FormData()
+      formData.append('username', email)
+      formData.append('password', password)
+
+      const response = await api.post('/auth/token', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      // Store the token
+      localStorage.setItem('authToken', response.data.access_token)
+      
+      // Fetch user data
+      await fetchUser()
+      
+      // Redirect to dashboard
+      router.push('/')
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to login')
+    }
   }
 
   return (
@@ -34,6 +59,11 @@ export default function LoginForm() {
             </p>
           </div>
           <div className="grid gap-4">
+            {error && (
+                <div className="text-red-500 text-sm text-center">
+                  {error}
+                </div>
+              )}
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input

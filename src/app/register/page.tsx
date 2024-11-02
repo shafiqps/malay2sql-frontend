@@ -3,6 +3,9 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import api from '@/lib/axios'
+import { useUser } from "@/contexts/UserContext"
+
 
 import { Button } from "@/components/ui/button"
 import {
@@ -20,14 +23,46 @@ export default function RegisterForm() {
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const router = useRouter()
+  const { fetchUser } = useUser()
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically handle user registration
-    // For now, we'll just redirect to the dashboard
-    localStorage.setItem('authToken', 'dummy-token')
-    router.push('/')
+    setError("")
+    
+    try {
+      // Register the user
+      await api.post('/auth/register', {
+        email,
+        password,
+        first_name: firstName,
+        last_name: lastName
+      })
+
+      // After successful registration, login the user
+      const formData = new FormData()
+      formData.append('username', email)
+      formData.append('password', password)
+
+      const loginResponse = await api.post('/auth/token', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      // Store the token
+      localStorage.setItem('authToken', loginResponse.data.access_token)
+      
+      // Fetch user data
+      await fetchUser()
+      
+      // Redirect to dashboard
+      router.push('/')
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to create account')
+    }
   }
 
   return (
@@ -41,6 +76,11 @@ export default function RegisterForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="grid gap-4">
+          {error && (
+              <div className="text-red-500 text-sm text-center">
+                {error}
+              </div>
+            )}
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="first-name">First name</Label>

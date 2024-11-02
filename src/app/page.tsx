@@ -6,6 +6,7 @@ import { useTheme } from "next-themes"
 import { User, UploadCloud, Settings, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useUser } from "@/contexts/UserContext"
 import Chat from "@/components/chat"
 import { 
   DropdownMenu,
@@ -18,20 +19,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme()
+  const { user, fetchUser } = useUser()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const token = localStorage.getItem('authToken')
       if (!token) {
         router.push('/login')
       } else {
+        await fetchUser()
         setIsAuthenticated(true)
       }
     }
     checkAuth()
-  }, [router])
+  }, [router, fetchUser])
 
   const handleLogout = () => {
     localStorage.removeItem('authToken')
@@ -55,12 +58,12 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="h-10 w-10">
-            <AvatarImage src="/placeholder.svg?height=80&width=80" alt="User's profile picture" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarImage src="/placeholder.svg?height=80&width=80" alt={`${user?.first_name}'s profile picture`} />
+            <AvatarFallback>{user ? `${user.first_name[0]}${user.last_name[0]}` : 'U'}</AvatarFallback>
           </Avatar>
           <div>
-            <h2 className="font-bold">John Doe</h2>
-            <p className="text-sm text-muted-foreground">john@example.com</p>
+            <h2 className="font-bold">{user ? `${user.first_name} ${user.last_name}` : 'Loading...'}</h2>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </div>
         <Separator className="my-4" />

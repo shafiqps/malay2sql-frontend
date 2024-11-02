@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Moon, Sun, User, BarChart, Settings, LogOut } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useUser } from "@/contexts/UserContext"
+import api from "@/lib/axios"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,16 +13,65 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 
 export default function Component() {
+  const { user, fetchUser } = useUser()
   const { setTheme, theme } = useTheme()
   const [activeTab, setActiveTab] = useState("profile")
-  const router = useRouter();
+  const router = useRouter()
+
+  // Form state
+  const [firstName, setFirstName] = useState(user?.first_name || "")
+  const [lastName, setLastName] = useState(user?.last_name || "")
+  const [email, setEmail] = useState(user?.email || "")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState("")
+
+  // Update form when user data is loaded
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.first_name)
+      setLastName(user.last_name)
+      setEmail(user.email)
+    }
+  }, [user])
+
   const handleBack = () => {
-    // Add your logout logic here
-    router.push("/");
-  };
+    router.push("/")
+  }
+
+  const handleUpdateProfile = async () => {
+    try {
+      await api.put('/users/me', {
+        first_name: firstName,
+        last_name: lastName,
+        email: email
+      })
+      await fetchUser() // Refresh user data
+      setError("")
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to update profile')
+    }
+  }
+
+  const handleUpdatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+    try {
+      await api.put('/users/me', {
+        password: newPassword
+      })
+      setNewPassword("")
+      setConfirmPassword("")
+      setError("")
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to update password')
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -82,27 +133,48 @@ export default function Component() {
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           <TabsContent value="profile">
-            <Card>
+          <Card>
               <CardHeader>
                 <CardTitle>User Information</CardTitle>
                 <CardDescription>Manage your profile information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {error && (
+                  <div className="text-red-500 text-sm">{error}</div>
+                )}
                 <div className="flex items-center gap-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src="/placeholder.svg?height=80&width=80" alt="User's profile picture" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarImage src="/placeholder.svg?height=80&width=80" alt={`${user?.first_name}'s profile picture`} />
+                    <AvatarFallback>{user ? `${user.first_name[0]}${user.last_name[0]}` : 'U'}</AvatarFallback>
                   </Avatar>
                   <Button>Change Picture</Button>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" value="John Doe" />
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input 
+                    id="firstName" 
+                    value={firstName} 
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input 
+                    id="lastName" 
+                    value={lastName} 
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" value="john.doe@example.com" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
+                <Button onClick={handleUpdateProfile}>Save Changes</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -133,21 +205,31 @@ export default function Component() {
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="new-password">New Password</Label>
-                  <Input id="new-password" type="password" />
+                  <Input 
+                    id="new-password" 
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input id="confirm-password" type="password" />
+                  <Input 
+                    id="confirm-password" 
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
                 </div>
-                <Button>Change Password</Button>
+                <Button onClick={handleUpdatePassword}>Change Password</Button>
                 <Separator />
                 <div className="flex items-center justify-between">
-                    <Label htmlFor="notifications">Email Notifications</Label>
-                    <Switch id="notifications" />
+                  <Label htmlFor="notifications">Email Notifications</Label>
+                  <Switch id="notifications" />
                 </div>
-                </CardContent>
+              </CardContent>
             </Card>
-            </TabsContent>
+          </TabsContent>
         </Tabs>
         </main>
     </div>
