@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { FileUpload } from "@/components/file-upload"
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme()
-  const { user, fetchUser } = useUser()
+  const { user, fetchUser, isLoading, logout } = useUser()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
 
@@ -28,16 +29,20 @@ export default function Dashboard() {
       const token = localStorage.getItem('authToken')
       if (!token) {
         router.push('/login')
-      } else {
+        return;
+      }
+      
+      if (!isAuthenticated && !isLoading) {
         await fetchUser()
         setIsAuthenticated(true)
       }
     }
     checkAuth()
-  }, [router, fetchUser])
+  }, [isLoading, isAuthenticated, router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken')
+    logout()
+    setIsAuthenticated(false)
     router.push('/login')
   }
 
@@ -54,7 +59,7 @@ export default function Dashboard() {
       <aside className="hidden w-64 flex-col border-r bg-muted/40 p-6 lg:flex">
         <div className="flex items-center gap-2 pb-6">
           <User className="h-6 w-6" />
-          <h1 className="text-lg font-semibold">MalaySQL</h1>
+          <h1 className="text-lg font-semibold">Malay2SQL</h1>
         </div>
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="h-10 w-10">
@@ -68,19 +73,7 @@ export default function Dashboard() {
         </div>
         <Separator className="my-4" />
         <nav className="flex flex-1 flex-col gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="justify-start">
-                <UploadCloud className="mr-2 h-4 w-4" />
-                File Upload
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>Upload SQL File</DropdownMenuItem>
-              <DropdownMenuItem>Upload CSV Data</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
+          <FileUpload />
         </nav>
         <div className="pt-6 gap-2 flex flex-col">
           <Separator className="my-4" />

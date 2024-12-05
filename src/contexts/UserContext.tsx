@@ -9,33 +9,41 @@ interface User {
   last_name: string;
 }
 
-interface UserContextType {
+export const UserContext = createContext<{
   user: User | null;
-  setUser: (user: User | null) => void;
+  isLoading: boolean;
   fetchUser: () => Promise<void>;
-}
-
-const UserContext = createContext<UserContextType | undefined>(undefined);
+  logout: () => void;
+}>({
+  user: null,
+  isLoading: false,
+  fetchUser: async () => {},
+  logout: () => {},
+});
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchUser = async () => {
+    setIsLoading(true);
     try {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        const response = await api.get('/users/me');  // No need to set Authorization header as it's handled by the interceptor
-        setUser(response.data);
-      }
+      const response = await api.get('/users/me');
+      setUser(response.data);
     } catch (error) {
-      console.error('Error fetching user:', error);
-      localStorage.removeItem('authToken');
       setUser(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('authToken');
+  };
+
   return (
-    <UserContext.Provider value={{ user, setUser, fetchUser }}>
+    <UserContext.Provider value={{ user, isLoading, fetchUser, logout }}>
       {children}
     </UserContext.Provider>
   );

@@ -1,4 +1,3 @@
-
 'use client'
 
 import Image from "next/image"
@@ -35,7 +34,10 @@ export default function LoginForm() {
         },
       })
 
-      // Store the token
+      // Clear any existing token first
+      localStorage.removeItem('authToken')
+      
+      // Store the new token
       localStorage.setItem('authToken', response.data.access_token)
       
       // Fetch user data
