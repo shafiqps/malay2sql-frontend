@@ -95,8 +95,17 @@ export function FileUpload() {
         className="w-full justify-start"
         disabled={isUploading}
       >
-        <UploadCloud className="mr-2 h-4 w-4" />
-        {isUploading ? "Uploading..." : "Upload JSON File"}
+        {isUploading ? (
+          <>
+            <UploadCloud className="mr-2 h-4 w-4 animate-bounce" />
+            Uploading...
+          </>
+        ) : (
+          <>
+            <UploadCloud className="mr-2 h-4 w-4" />
+            Upload JSON File
+          </>
+        )}
       </Button>
     </div>
   )

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card, CardContent } from "@/components/ui/card"
-import { User, Bot, Send } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { User, Bot, Send, Globe, Columns } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Skeleton } from '@/components/ui/skeleton'
 import api from '@/lib/axios'
@@ -68,29 +69,10 @@ export default function Chat() {
           query: input
         });
 
-        const relevantColumnsText = Object.entries(response.data.relevant_columns)
-          .map(([col, desc]) => `- ${col}: ${desc}`)
-          .join('\n');
-
-        const formattedResponse = `
-Malay Query: ${response.data.malay_query}
-
-English Translation: ${response.data.english_translation}
-
-Relevant Columns:
-${relevantColumnsText}
-
-SQL Query:
-\`\`\`sql
-${response.data.sql_query}
-\`\`\`
-
-Execution Time: ${response.data.execution_time.toFixed(2)}s`;
-
         const newAiMessage: Message = {
           id: Date.now(),
           type: 'ai',
-          content: formattedResponse
+          content: JSON.stringify(response.data)
         };
 
         setMessages(prev => [...prev, newAiMessage]);
@@ -112,49 +94,108 @@ Execution Time: ${response.data.execution_time.toFixed(2)}s`;
   }
 
   const renderMessage = (message: Message) => {
-    return (
-      <motion.div
-        key={message.id}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
-      >
-        <Card className={`max-w-[80%] ${message.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-          <CardContent className="p-3">
-            <div className="flex items-start">
-              {message.type === 'ai' && <Bot className="mr-2 h-5 w-5 mt-0.5" />}
-              <div className="flex-grow">
-                <ReactMarkdown
-                  components={{
-                    code: ({ node, inline, className, children, ...props }: CodeProps) => {
-                      const match = /language-(\w+)/.exec(className || '')
-                      return !inline && match ? (
-                        <SyntaxHighlighter
-                          style={vscDarkPlus}
-                          language={match[1]}
-                          PreTag="div"
-                          children={String(children).replace(/\n$/, '')}
-                        >
-                        </SyntaxHighlighter>
-                      ) : (
-                        <code className={className} {...props}>
-                          {children}
-                        </code>
-                      )
-                    }
-                  }}
-                >
-                  {message.content}
-                </ReactMarkdown>
+    if (message.type === 'user') {
+      return (
+        <motion.div
+          key={message.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="flex justify-end mb-4"
+        >
+          <Card className="max-w-[80%] bg-primary text-primary-foreground">
+            <CardContent className="p-3">
+              <div className="flex items-start">
+                <div className="flex-grow">{message.content}</div>
+                <User className="ml-2 h-5 w-5 mt-0.5" />
               </div>
-              {message.type === 'user' && <User className="ml-2 h-5 w-5 mt-0.5" />}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    )
+            </CardContent>
+          </Card>
+        </motion.div>
+      )
+    }
+
+    if (message.type === 'ai') {
+      const data: QueryResult = JSON.parse(message.content);
+      return (
+        <motion.div
+          key={message.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="flex justify-start mb-4"
+        >
+          <Card className="max-w-[80%] bg-secondary">
+            <CardContent className="p-3">
+              <div className="flex items-start">
+                <Bot className="mr-2 h-5 w-5 mt-0.5" />
+                <div className="flex-grow space-y-2">
+                  <ReactMarkdown
+                    components={{
+                      code: ({ node, inline, className, children, ...props }: CodeProps) => {
+                        const match = /language-(\w+)/.exec(className || '')
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={vscDarkPlus}
+                            language={match[1]}
+                            PreTag="div"
+                            children={String(children).replace(/\n$/, '')}
+                          />
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        )
+                      }
+                    }}
+                  >
+                    {`\`\`\`sql\n${data.sql_query}\n\`\`\``}
+                  </ReactMarkdown>
+                  <div className="flex space-x-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="icon">
+                          <Globe className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Translation</h4>
+                          <p><strong>Malay Query:</strong> {data.malay_query}</p>
+                          <p><strong>English Translation:</strong> {data.english_translation}</p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="icon">
+                          <Columns className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Relevant Columns</h4>
+                          <ul className="list-disc pl-5">
+                            {Object.entries(data.relevant_columns).map(([col, desc]) => (
+                              <li key={col}>{col}: {desc}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Execution Time: {data.execution_time.toFixed(2)}s
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )
+    }
   }
 
   useEffect(() => {
