@@ -27,7 +27,7 @@ export default function Dashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('authToken')
-      if (!token) {
+      if (!token || !user) {
         router.push('/login')
         return;
       }
