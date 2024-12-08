@@ -215,8 +215,9 @@ export default function Chat() {
                             style={vscDarkPlus}
                             language={match[1]}
                             PreTag="div"
-                            children={String(children).replace(/\n$/, '')}
-                          />
+                          >
+                            {String(children).replace(/\n$/, '')}
+                          </SyntaxHighlighter>
                         ) : (
                           <code className={className} {...props}>
                             {children}
