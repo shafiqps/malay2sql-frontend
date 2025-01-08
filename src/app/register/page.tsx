@@ -23,6 +23,7 @@ export default function RegisterForm() {
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
   const { fetchUser } = useUser()
@@ -31,6 +32,7 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setIsLoading(true)
     
     try {
       // Register the user
@@ -62,6 +64,8 @@ export default function RegisterForm() {
       router.push('/')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to create account')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -90,6 +94,7 @@ export default function RegisterForm() {
                 required 
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -100,6 +105,7 @@ export default function RegisterForm() {
                 required 
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -112,6 +118,7 @@ export default function RegisterForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div className="grid gap-2">
@@ -121,10 +128,18 @@ export default function RegisterForm() {
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
             />
           </div>
-          <Button type="submit" className="w-full">
-            Create an account
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <span className="mr-2">Creating account</span>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              </>
+            ) : (
+              "Create an account"
+            )}
           </Button>
         </form>
         <div className="mt-4 text-center text-sm">

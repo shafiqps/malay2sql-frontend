@@ -359,7 +359,7 @@ export default function Chat() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label htmlFor="original-sql" className="block text-sm font-medium text-gray-700">Original SQL</label>
+              <label htmlFor="original-sql" className="block text-sm font-medium">Original SQL</label>
               <Textarea
                 id="original-sql"
                 value={currentFeedbackQuery?.sql_query || ''}
@@ -368,7 +368,7 @@ export default function Chat() {
               />
             </div>
             <div>
-              <label htmlFor="corrected-sql" className="block text-sm font-medium text-gray-700">Corrected SQL (if needed)</label>
+              <label htmlFor="corrected-sql" className="block text-sm font-medium">Corrected SQL (if needed)</label>
               <Textarea
                 id="corrected-sql"
                 value={correctedSQL}

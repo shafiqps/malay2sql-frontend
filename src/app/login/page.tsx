@@ -14,6 +14,7 @@ export default function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { fetchUser } = useUser()
 
@@ -21,9 +22,9 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    
+    setIsLoading(true)
+
     try {
-      // Create form data as expected by FastAPI's OAuth2PasswordRequestForm
       const formData = new FormData()
       formData.append('username', email)
       formData.append('password', password)
@@ -47,6 +48,8 @@ export default function LoginForm() {
       router.push('/')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to login')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -75,6 +78,7 @@ export default function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -87,10 +91,18 @@ export default function LoginForm() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Login
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <span className="mr-2">Logging in</span>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                </>
+              ) : (
+                "Login"
+              )}
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">
@@ -101,14 +113,10 @@ export default function LoginForm() {
           </div>
         </form>
       </div>
-      <div className="hidden bg-muted lg:block">
-        <Image
-          src="/placeholder.svg"
-          alt="Image"
-          width="1920"
-          height="1080"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
+      <div className="hidden lg:block">
+        <div className="flex h-full items-center justify-center">
+          <h1 className="text-6xl font-bold tracking-tight">Malay2SQL</h1>
+        </div>
       </div>
     </div>
   )

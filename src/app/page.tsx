@@ -63,8 +63,13 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="h-10 w-10">
-            <AvatarImage src="/placeholder.svg?height=80&width=80" alt={`${user?.first_name}'s profile picture`} />
-            <AvatarFallback>{user ? `${user.first_name[0]}${user.last_name[0]}` : 'U'}</AvatarFallback>
+            <AvatarImage 
+              src={user?.profile_picture_url || "/placeholder.svg?height=80&width=80"} 
+              alt={`${user?.first_name}'s profile picture`} 
+            />
+            <AvatarFallback>
+              {user ? `${user.first_name[0]}${user.last_name[0]}` : 'U'}
+            </AvatarFallback>
           </Avatar>
           <div>
             <h2 className="font-bold">{user ? `${user.first_name} ${user.last_name}` : 'Loading...'}</h2>
