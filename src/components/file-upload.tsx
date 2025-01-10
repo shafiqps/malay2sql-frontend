@@ -140,7 +140,7 @@ export function FileUpload() {
           </Button>
         </div>
 
-        {schemaContent && (
+        {schemaContent && !isUploading && (
           <Card className="w-full">
             <CardContent className="pt-6">
             <div className="space-y-4">
