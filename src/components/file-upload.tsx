@@ -112,7 +112,7 @@ export function FileUpload() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
         <div className="relative mb-4">
           <input
             type="file"
@@ -141,25 +141,24 @@ export function FileUpload() {
         </div>
 
         {schemaContent && !isUploading && (
-          <Card className="w-full">
-            <CardContent className="pt-6">
-            <div className="space-y-4">
-              <Textarea
-                value={schemaContent}
-                onChange={(e) => setSchemaContent(e.target.value)}
-                className="font-mono text-sm"
-                rows={25}
-                placeholder="JSON Schema"
-              />
-              <Button 
-                onClick={handleSaveSchema} 
-                className="w-full"
-                disabled={isUploading}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </Button>
-            </div>
+          <Card className="w-full flex-1 min-h-0">
+            <CardContent className="pt-6 h-full">
+              <div className="space-y-4 flex flex-col h-full">
+                <Textarea
+                  value={schemaContent}
+                  onChange={(e) => setSchemaContent(e.target.value)}
+                  className="font-mono text-sm flex-1 min-h-0"
+                  placeholder="JSON Schema"
+                />
+                <Button 
+                  onClick={handleSaveSchema} 
+                  className="w-full"
+                  disabled={isUploading}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}

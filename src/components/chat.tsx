@@ -205,19 +205,26 @@ export default function Chat() {
             <CardContent className="p-3">
               <div className="flex items-start">
                 <Bot className="mr-2 h-5 w-5 mt-0.5" />
-                <div className="flex-grow space-y-2">
+                <div className="flex-grow space-y-2 w-full min-w-0">
                   <ReactMarkdown
                     components={{
                       code: ({ node, inline, className, children, ...props }: CodeProps) => {
                         const match = /language-(\w+)/.exec(className || '')
                         return !inline && match ? (
-                          <SyntaxHighlighter
-                            style={vscDarkPlus}
-                            language={match[1]}
-                            PreTag="div"
-                          >
-                            {String(children).replace(/\n$/, '')}
-                          </SyntaxHighlighter>
+                          <div className="w-full min-w-0 overflow-x-auto">
+                            <SyntaxHighlighter
+                              style={vscDarkPlus}
+                              language={match[1]}
+                              PreTag="div"
+                              customStyle={{
+                                margin: 0,
+                                width: '100%',
+                                minWidth: 'fit-content'
+                              }}
+                            >
+                              {String(children).replace(/\n$/, '')}
+                            </SyntaxHighlighter>
+                          </div>
                         ) : (
                           <code className={className} {...props}>
                             {children}

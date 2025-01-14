@@ -54,9 +54,9 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[1000px]">
-      <div className="flex items-center justify-center py-12">
-        <form onSubmit={handleSubmit} className="mx-auto grid w-[350px] gap-6">
+    <div className="w-full h-screen lg:grid lg:grid-cols-2">
+      <div className="flex items-center justify-center h-full">
+        <form onSubmit={handleSubmit} className="mx-auto grid w-[350px] gap-4">
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Login</h1>
             <p className="text-balance text-muted-foreground">
@@ -115,7 +115,7 @@ export default function LoginForm() {
       </div>
       <div className="hidden lg:block">
         <div className="flex h-full items-center justify-center">
-          <h1 className="text-6xl font-bold tracking-tight">Malay2SQL</h1>
+          <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">Malay2SQL</h1>
         </div>
       </div>
     </div>
