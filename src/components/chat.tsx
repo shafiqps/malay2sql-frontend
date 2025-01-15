@@ -142,22 +142,26 @@ export default function Chat() {
     }
   }
 
-  const handleExecute = async (sqlQuery: string) => {
+  const handleExecute = async (sqlQuery: string, messageId: number) => {
     setIsExecuting(true)
     try {
       const response = await api.post<ExecutionResult>('/malay2sql/execute', {
         sql_query: sqlQuery
       })
       
-      const executionMessage: Message = {
-        id: Date.now(),
-        type: 'ai',
-        content: JSON.stringify({
-          ...JSON.parse(messages[messages.length - 1].content),
-          execution_result: response.data.result
-        })
-      }
-      setMessages(prev => [...prev.slice(0, -1), executionMessage])
+      setMessages(prevMessages => prevMessages.map(msg => {
+        if (msg.id === messageId) {
+          return {
+            ...msg,
+            content: JSON.stringify({
+              ...JSON.parse(msg.content),
+              execution_result: response.data.result
+            })
+          }
+        }
+        return msg
+      }))
+      
       toast.success(response.data.message)
     } catch (error: any) {
       console.error('Error executing query:', error)
@@ -273,7 +277,7 @@ export default function Chat() {
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      onClick={() => handleExecute(data.sql_query)}
+                      onClick={() => handleExecute(data.sql_query, message.id)}
                       disabled={isExecuting}
                       className={`relative ${isExecuting ? 'animate-pulse' : ''}`}
                     >
